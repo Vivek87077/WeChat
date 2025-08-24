@@ -36,41 +36,27 @@ A **real-time chat application** designed for instant messaging, group chats, an
 
 ---
 
-## 📸 Screenshots / Demo
-
-*(Include high-quality images or GIFs of your app)*  
+## 📸 Screenshots 
+![Chat App Screeshot](./client/src/assets/Chat_UI.png)
 - Login / Registration page  
 - Chat interface (real-time messaging & typing indicators)  
 - Group chat creation & member management  
 - Admin dashboard with analytics  
 
 > Optionally, link to a live demo:  
-> [Live Demo](#)
+> [Live Demo](https://chatklr.netlify.app/)
 
 ---
 
 ## 📂 Project Structure
-backend/
-├─ controllers/
-├─ models/
-├─ routes/
-├─ middleware/
-└─ server.js
-
-frontend/
-├─ src/
-│ ├─ components/
-│ ├─ pages/
-│ ├─ context/
-│ └─ App.js
-└─ package.json
+![Project Structure](./client/src/assets/Project_Structure.png)
 
 
 ---
 
 ## 💻 How to Run Locally
 1. **Clone the repository**  
-git clone https://github.com/yourusername/real-time-chat-app.git
+git clone https://github.com/Vivek87077/WeChat.git
 cd real-time-chat-app
 
 2. **Setup backend**
@@ -104,6 +90,6 @@ Ensure MongoDB is running locally or configure your .env for cloud MongoDB.
 - Add push notifications for offline users
 
 ## 👨‍💻 Author
-**Name**: Your Name
-**GitHub**: Vivek87077
-**LinkedIn**: https://www.linkedin.com/in/viveksm3tv/
+- **Name**: **VIVEK SHARMA**
+- **GitHub**: Vivek87077
+- **LinkedIn**: https://www.linkedin.com/in/viveksm3tv/
