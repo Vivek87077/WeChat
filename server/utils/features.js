@@ -4,38 +4,65 @@ import { v4 as uuid } from "uuid";
 import { v2 as cloudinary } from "cloudinary";
 import { getBase64, getSockets } from "../lib/helper.js";
 
+/* =======================
+   Cookie Options
+======================= */
 const cookieOptions = {
-  maxAge: 15 * 24 * 60 * 60 * 1000,
-  sameSite: "none",
-  httpOnly: true,
-  secure: true,
+  maxAge: 15 * 24 * 60 * 60 * 1000, // 15 days
+  sameSite: "none",  // important for cross-site cookies
+  httpOnly: true,    // JS se access nahi hoga
+  secure: true,      // only https
 };
 
-const connectDB = (uri) => {
-  mongoose
-    .connect(uri, { dbName: "Chattu" })
-    .then((data) => console.log(`Connected to DB: ${data.connection.host}`))
-    .catch((err) => {
-      throw err;
+/* =======================
+   MongoDB Connection
+======================= */
+const connectDB = async (uri) => {
+  try {
+    await mongoose.connect(uri, {
+      dbName: "Chattu",          // custom DB name
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      ssl: true,                 // Atlas requires SSL
+      tls: true,                 // enforce TLS
+    });
+    console.log(`✅ Connected to DB: ${mongoose.connection.host}`);
+  } catch (err) {
+    console.error("❌ MongoDB connection error:", err.message);
+    process.exit(1);
+  }
+};
+
+/* =======================
+   Send JWT Token in Cookie
+======================= */
+const sendToken = (res, user, code, message) => {
+  const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+    expiresIn: "15d",
+  });
+
+  return res
+    .status(code)
+    .cookie("chattu-token", token, cookieOptions)
+    .json({
+      success: true,
+      user,
+      message,
     });
 };
 
-const sendToken = (res, user, code, message) => {
-  const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
-
-  return res.status(code).cookie("chattu-token", token, cookieOptions).json({
-    success: true,
-    user,
-    message,
-  });
-};
-
+/* =======================
+   Emit Event via Socket.io
+======================= */
 const emitEvent = (req, event, users, data) => {
   const io = req.app.get("io");
   const usersSocket = getSockets(users);
   io.to(usersSocket).emit(event, data);
 };
 
+/* =======================
+   Upload Files to Cloudinary
+======================= */
 const uploadFilesToCloudinary = async (files = []) => {
   const uploadPromises = files.map((file) => {
     return new Promise((resolve, reject) => {
@@ -56,18 +83,30 @@ const uploadFilesToCloudinary = async (files = []) => {
   try {
     const results = await Promise.all(uploadPromises);
 
-    const formattedResults = results.map((result) => ({
+    return results.map((result) => ({
       public_id: result.public_id,
       url: result.secure_url,
     }));
-    return formattedResults;
   } catch (err) {
-    throw new Error("Error uploading files to cloudinary", err);
+    console.error("❌ Cloudinary Upload Error:", err.message);
+    throw new Error("Error uploading files to cloudinary");
   }
 };
 
-const deletFilesFromCloudinary = async (public_ids) => {
-  // Delete files from cloudinary
+/* =======================
+   Delete Files from Cloudinary
+======================= */
+const deleteFilesFromCloudinary = async (public_ids = []) => {
+  try {
+    const deletePromises = public_ids.map((public_id) =>
+      cloudinary.uploader.destroy(public_id)
+    );
+    await Promise.all(deletePromises);
+    console.log("🗑️ Files deleted from Cloudinary:", public_ids);
+  } catch (err) {
+    console.error("❌ Error deleting files from Cloudinary:", err.message);
+    throw new Error("Error deleting files from Cloudinary");
+  }
 };
 
 export {
@@ -75,6 +114,6 @@ export {
   sendToken,
   cookieOptions,
   emitEvent,
-  deletFilesFromCloudinary,
   uploadFilesToCloudinary,
+  deleteFilesFromCloudinary,
 };
