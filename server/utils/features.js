@@ -13,7 +13,11 @@ const cookieOptions = {
 
 const connectDB = (uri) => {
   mongoose
-    .connect(uri, { dbName: "Chattu" })
+    .connect(uri, { 
+      dbName: "Chattu", 
+      ssl: true,              // ✅ SSL required by Atlas
+      tls: true,              // ✅ TLS force enable
+    })
     .then((data) => console.log(`Connected to DB: ${data.connection.host}`))
     .catch((err) => {
       throw err;
